@@ -7,6 +7,7 @@ class Ability
     elsif user.admin?
       can :read, Company, user_id: user.id
       can :update, Company, user_id: user.id
+      # can [:read, :update], Company, user: user
     end
   end
 end

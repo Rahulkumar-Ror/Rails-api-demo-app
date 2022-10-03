@@ -7,6 +7,8 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :validatable, :jwt_authenticatable, jwt_revocation_strategy: self
   
   has_many :companies
+
+  before_create :set_user_role
   ROLES = %w{super_admin admin manager editor collaborator}
   def jwt_payload
     super
@@ -16,5 +18,9 @@ class User < ApplicationRecord
     define_method "#{role_name}?" do 
       role == role_name  
     end
+  end
+
+  def set_user_role
+    self.role = 'admin'
   end
 end
