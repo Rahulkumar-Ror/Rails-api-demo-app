@@ -4,10 +4,12 @@ class Ability
   def initialize(user)
     if user.super_admin?
       can :manage, :all
-    elsif user.admin?
+    else user.admin?
+      # binding.pry
       can :read, Company, user_id: user.id
       can :update, Company, user_id: user.id
-      # can [:read, :update], Company, user: user
+      can :search, Company
+      can :destroy, Company, user_id: user.id
     end
   end
 end

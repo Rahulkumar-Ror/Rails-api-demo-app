@@ -13,4 +13,5 @@ Rails.application.routes.draw do
       resources :companies
     end
   end
+  get 'search_company', to: "api/v1/companies#search", :as => :search_company
 end

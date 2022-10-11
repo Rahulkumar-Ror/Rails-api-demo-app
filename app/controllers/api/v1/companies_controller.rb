@@ -1,54 +1,55 @@
 class Api::V1::CompaniesController < ApiController
   load_and_authorize_resource
-  before_action :set_company, only: [:show, :update, :destroy]
+  before_action :set_company, only: [:update, :destroy]
 
   def index
-    @companies = Company.accessible_by(current_ability)
-    # @companies = current_user.companies
-    render json: @companies, status: 200
-  end
-
-  def show
-    if @company
-      render json: @company, status: :ok 
-    else 
-      render json: { error: "Couldn't find article" }
+    @companies = current_user.companies
+    if @companies.present?
+      render json: @companies, status: 200
+    else
+      render json: { error: "NO companies are registered" }, status: 404
     end
   end
-
+  
+  def show
+    @company = current_user.companies.find(params[:id])
+    render json: @company, status: 200 #For success 
+  end
+  
   def create
     @company = Company.new(company_params)
-    # @company = current_user.companies.new(company_params)
     if @company.save
-      render json: @company, status: 201
+      render json: @company, status: 201 #for successfully created
     else
-      render json: { data: @company.errors.full_messages, status: "failed" }, status: 300
+      render json: { error: 'You missed something while filling the form.' }, status: 422
     end
   end
 
-  def update
-    if @company.update(company_params)
-      render json: @company, status: 200
+  def search
+    @parameter = params[:name]
+    @company = Company.where("lower(name) LIKE :name", name: "%#{@parameter}%")
+    if @company != [] 
+      render json: @company
     else
-      render json: { data: @company.errors.full_messages, status: "failed" }, status: 400
-    end  
+      # binding.pry
+      render json: "Record with name #{params[:name]} been not found!", status: 404
+    end   
+	end
+
+  def update
+    @company.update(company_params)
+    render json: @company, status: 200
   end
 
   def destroy 
-    if @company.destroy
-      render json: { data: 'Company deleted successfully', status: 'sucess' }, status: 200
-    else
-      render json: { error: "Couldn't find company with id #{params[:id]}" }, status: 400
-    end
+    @company.destroy
+    render json: { data: 'Company deleted successfully' }, status: 200
   end
 
   private
 
   def set_company
-    # @company = Company.find(params[:id])
     @company = current_user.companies.find(params[:id])
-  rescue ActiveRecord::RecordNotFound => error
-    render json: error.message, status: :unauthorized
   end
 
   def company_params
